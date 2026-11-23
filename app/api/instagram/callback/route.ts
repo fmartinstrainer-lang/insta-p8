@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getSupabaseServerClient } from "@/lib/supabase-server"
+import { AUTH_COOKIE, signSession } from "@/lib/auth-cookie"
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -122,6 +123,13 @@ export async function POST(request: NextRequest) {
       path: "/",
       maxAge: expiresIn,
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    })
+    response.cookies.set(AUTH_COOKIE, await signSession(loginUserId, expiresIn), {
+      path: "/",
+      maxAge: expiresIn,
+      sameSite: "lax",
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
     })
     return response
